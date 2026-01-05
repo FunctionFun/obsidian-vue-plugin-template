@@ -1,0 +1,36 @@
+{
+	"name": "obsidian-vue-plugin-template",
+	"version": "1.0.0",
+	"description": "Obsidian 插件开发模板，集成 Vue 3、TypeScript、Vite 和 esbuild",
+	"main": "main.js",
+	"type": "module",
+	"scripts": {
+		"dev": "node esbuild.config.mjs",
+		"build:vue": "vite build",
+		"build:main": "node esbuild.config.mjs production",
+		"build": "npm run build:main && npm run build:vue && cp manifest.json LICENSE dist/ && cp -r dist/vue/* dist/ && rm -rf dist/vue",
+		"version": "node version-bump.mjs && git add manifest.json versions.json",
+		"lint": "eslint .",
+		"package": "mkdir -p release && cp dist/main.js dist/styles.css manifest.json release/ && zip -r release/obsidian-vue-plugin-template.zip release/*"
+	},
+	"keywords": [],
+	"license": "0-BSD",
+	"devDependencies": {
+		"@eslint/js": "9.30.1",
+		"@types/node": "^16.11.6",
+		"@vitejs/plugin-vue": "^6.0.3",
+		"@vitejs/plugin-vue-jsx": "^5.1.3",
+		"esbuild": "0.25.5",
+		"eslint-plugin-obsidianmd": "0.1.9",
+		"globals": "14.0.0",
+		"jiti": "2.6.1",
+		"tslib": "2.4.0",
+		"typescript": "^5.8.3",
+		"typescript-eslint": "8.35.1",
+		"vite": "^7.3.0"
+	},
+	"dependencies": {
+		"obsidian": "latest",
+		"vue": "^3.5.26"
+	}
+}
