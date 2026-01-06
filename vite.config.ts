@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [vue()],
   build: {
     lib: {
@@ -17,6 +17,7 @@ export default defineConfig({
     },
     outDir: 'dist/vue',
     emptyOutDir: true,
-    sourcemap: false,
+    sourcemap: mode === 'development',
+    watch: mode === 'development' ? {} : undefined,
   },
-});
+}));

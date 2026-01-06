@@ -94,6 +94,10 @@ export default class MyPlugin extends Plugin {
     if (this.unmountVue) {
       this.unmountVue();
     }
+		
+    // 清除 Vue 应用的缓存，确保热重载时能重新加载
+    this.vueAppLoaded = false;
+    // 不尝试删除 VueObsidianComponent，因为它是通过 Object.defineProperty 添加的，默认不可配置
 	}
 
 	// 提供挂载 Vue 的方法（供 SettingTab 调用）
@@ -106,8 +110,15 @@ export default class MyPlugin extends Plugin {
 
 	// 动态加载 Vue UMD 模块
 	private async loadVueApp() {
-		if (this.vueAppLoaded || (window as any).VueObsidianComponent) {
-			return;
+		// 如果 Vue 组件已经加载，先卸载它
+		if ((window as any).VueObsidianComponent) {
+			// 移除旧的 script 标签
+			const oldScript = document.querySelector(`script[src*="vue-app.iife.js"]`);
+			if (oldScript) {
+				document.head.removeChild(oldScript);
+			}
+			// 不直接删除全局对象，而是尝试重新加载
+			// VueObsidianComponent 是通过 Object.defineProperty 添加的，默认不可配置
 		}
 
 		return new Promise<void>((resolve, reject) => {
@@ -115,7 +126,10 @@ export default class MyPlugin extends Plugin {
 			
 			// 使用 Obsidian 的 API 获取插件目录路径
 			const pluginPath = this.app.vault.adapter.getResourcePath(`.obsidian/plugins/obsidian-vue-plugin-template/vue-app.iife.js`);
-			script.src = pluginPath;
+			// 添加时间戳防止浏览器缓存（确保只添加一次，避免URL编码问题）
+			const timestamp = Date.now();
+			const finalPath = `${pluginPath}?${timestamp}`;
+			script.src = finalPath;
 			
 			script.onload = () => {
 				console.log('Vue IIFE 模块加载成功');
@@ -123,7 +137,7 @@ export default class MyPlugin extends Plugin {
 				resolve();
 			};
 			script.onerror = () => {
-				console.error('Vue IIFE 模块加载失败，路径:', pluginPath);
+				console.error('Vue IIFE 模块加载失败，路径:', finalPath);
 				reject(new Error('Failed to load Vue IIFE module'));
 			};
 			document.head.appendChild(script);

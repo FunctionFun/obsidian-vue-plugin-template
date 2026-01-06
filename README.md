@@ -1,196 +1,235 @@
-# Obsidian 插件开发模板
+# Obsidian Vue Plugin Template
 
-这是一个 Obsidian 插件开发模板项目，集成了 Vue 3、TypeScript、Vite 和 esbuild，方便快速开发 Obsidian 插件。
+一个集成了 Vue 3、TypeScript、Vite 和 esbuild 的 Obsidian 插件开发模板。
 
-## 项目特性
+## 特性
 
-- **TypeScript** - 提供类型检查和代码提示
-- **Vue 3** - 用于构建插件的用户界面
-- **Vite** - 快速构建 Vue 应用
-- **esbuild** - 高效打包 Obsidian 插件主文件
-- **ESLint** - 代码质量检查
-- **热重载** - 开发模式下自动编译
+- **Vue 3 集成**：使用 Vue 3 构建交互式插件界面
+- **TypeScript 支持**：类型安全的开发体验
+- **双构建系统**：
+  - esbuild 用于快速构建 main.ts
+  - Vite 用于构建 Vue 应用
+- **热重载支持**：开发时自动刷新插件
+- **设置页面集成**：Vue 组件无缝嵌入 Obsidian 设置面板
+
+## 环境要求
+
+- Node.js >= 16.0.0
+- npm >= 8.0.0
+- Obsidian >= 0.15.0
+
+## 快速开始
+
+### 1. 安装依赖
+
+```bash
+npm install
+```
+
+### 2. 开发模式
+
+启动开发服务器，支持热重载：
+
+```bash
+npm run dev
+```
+
+这将启动三个并发进程：
+- esbuild 构建 main.ts
+- Vite 构建 Vue 应用（监听模式）
+- 自动复制 Vue 构建文件到 dist 目录
+
+### 3. 测试插件
+
+1. 在 Obsidian 中打开一个测试 vault
+2. 创建插件目录：`test-valt/.obsidian/plugins/obsidian-vue-plugin-template/`
+3. 创建软链接（确保在项目根目录执行）：
+
+```bash
+ln -s /Users/your-username/Documents/Code/obsidian-vue-plugin-template/dist /Users/your-username/Documents/Code/obsidian-vue-plugin-template/test-valt/.obsidian/plugins/obsidian-vue-plugin-template
+```
+
+4. 手动重启 Obsidian 应用程序，或安装并配置热重载插件 Hot Reload 以实现插件代码的实时更新
+
+### Hot Reload 插件使用说明
+
+**注意**：Hot Reload 插件目前不在 Obsidian 社区插件市场中，需要从 GitHub 手动下载安装。
+
+1. **从 GitHub 下载 Hot Reload 插件**：
+   - 打开浏览器，访问 Hot Reload 插件的 GitHub 仓库发布页面：`https://github.com/pjeby/hot-reload/releases`
+   - 下载最新版本的插件压缩包（通常命名为 `hot-reload-x.x.x.zip` 格式）
+
+2. **手动安装 Hot Reload 插件**：
+   - 打开 Obsidian 设置面板
+   - 点击左侧导航栏的「社区插件」选项
+   - 确保「安全模式」已关闭
+   - 点击「文件夹」图标，打开 Obsidian 的插件目录
+   - 在插件目录中创建一个名为 `hot-reload` 的新文件夹
+   - 将下载的插件压缩包解压，将所有文件复制到 `hot-reload` 文件夹中
+   - 返回 Obsidian 设置面板，刷新「已安装插件」列表
+   - 找到 Hot Reload 插件后，点击「启用」按钮激活插件
+
+3. **基本配置方法**：
+   - 在你的插件项目根目录下的 `dist` 文件夹中创建一个名为 `.hotreload` 的空文件
+   - 这个空文件是 Hot Reload 插件识别开发中插件的标记，确保只对该插件进行热重载
+   - 安装并启用 Hot Reload 插件后，它会自动检测带有 `.hotreload` 文件的插件并启用热重载功能
+   - 重启一次 Obsidian 应用程序，使 Hot Reload 插件生效
+
+4. **实现自动重载**：
+   - 确保你的插件代码位于 Obsidian 的插件目录中（通过软链接或直接放置）
+   - 当你修改插件代码并保存后，Hot Reload 插件会自动检测到文件变化
+   - 插件会在几秒钟内自动重新加载你的插件，无需手动重启 Obsidian
+   - 注意：对于 Vue 组件的修改，可能需要等待 Vite 构建完成后才会触发重载
+
+使用 Hot Reload 插件可以大大提高开发效率，减少手动重启 Obsidian 的次数。
+
+### 4. 打包发布
+
+#### 版本管理
+
+在发布新版本前，建议先更新插件版本号：
+
+```bash
+npm version [patch|minor|major]
+```
+
+这将：
+- 自动更新 `manifest.json` 中的版本号
+- 自动更新 `versions.json` 文件（用于 Obsidian 插件市场，只有当最小应用版本变化时才会添加新条目）
+- 自动创建版本提交记录（格式：`chore(release): vX.X.X`）
+
+#### 构建生产版本
+
+版本更新完成后，运行构建命令生成生产版本的插件文件：
+
+```bash
+npm run build
+```
+
+这将：
+- 自动使用 esbuild 构建 main.ts 到 dist/main.js
+- 自动使用 Vite 构建 Vue 应用到 dist/vue
+- 自动复制 Vue 构建产物到 dist 目录
+- 生成完整的插件发布文件结构
+
+#### 打包插件
+
+构建完成后，运行打包命令创建插件发布包：
+
+```bash
+npm run package
+```
+
+这将：
+- 自动在项目根目录创建 `release` 文件夹（如果不存在）
+- 复制必要的插件文件（main.js、styles.css、manifest.json）到 release 文件夹
+- 将这些文件打包成 ZIP 压缩包
+- 压缩包命名为 `obsidian-vue-plugin-template.zip`
+
+#### 发布到社区插件市场
+
+1. 登录 GitHub 并进入你的插件仓库
+2. 点击右侧的 "Releases" 选项卡
+3. 点击 "Draft a new release" 创建新版本
+4. 填写版本号、发布说明等信息
+5. 上传之前生成的 ZIP 压缩包
+6. 点击 "Publish release" 发布版本
+7. 最后，按照 Obsidian 社区插件市场的指南提交你的插件
+
+通过以上步骤，你可以将插件打包并发布到 Obsidian 社区插件市场，供其他用户使用。
 
 ## 项目结构
 
 ```
 obsidian-vue-plugin-template/
 ├── src/
-│   ├── main.ts              # Obsidian 插件主入口
-│   ├── settings.ts          # 插件设置相关
-│   └── vue-app/
-│       ├── main.ts          # Vue 应用入口
-│       └── App.vue         # Vue 根组件
-├── dist/                    # 构建输出目录
-│   ├── main.js             # 插件主文件
-│   ├── manifest.json       # 插件清单
-│   ├── styles.css          # 样式文件
-│   ├── vue-app.umd.js      # Vue 应用文件
-│   └── LICENSE             # 许可证文件
-├── esbuild.config.mjs      # esbuild 配置
+│   ├── main.ts              # 插件主入口
+│   ├── settings.ts          # 设置定义
+│   ├── vue-app/            # Vue 应用目录
+│   │   ├── App.vue         # 主 Vue 组件
+│   │   └── main.ts         # Vue 应用入口
+│   └── shims-vue.d.ts      # Vue 类型声明
+├── dist/                   # 构建输出目录
 ├── vite.config.ts          # Vite 配置
-├── tsconfig.json           # TypeScript 配置
-└── package.json            # 项目配置
+├── esbuild.config.mjs      # esbuild 配置
+├── manifest.json           # Obsidian 插件 manifest
+├── package.json            # 项目依赖
+└── README.md               # 本文件
 ```
-
-## 快速开始
-
-### 1. 使用模板创建新项目
-
-- 点击 GitHub 上的 "Use this template" 按钮，创建你自己的仓库
-- 或者直接克隆这个模板项目
-
-### 2. 安装依赖
-
-确保你的 Node.js 版本至少是 v16：
-
-```bash
-node --version
-```
-
-在项目根目录下运行：
-
-```bash
-npm install
-```
-
-### 3. 修改项目信息
-
-修改以下文件中的项目信息：
-
-- `package.json` - 修改项目名称、描述等
-- `manifest.json` - 修改插件 ID、名称、描述等
-- `LICENSE` - 修改版权信息
-
-### 4. 开发模式
-
-启动开发模式，代码修改会自动编译：
-
-```bash
-npm run dev
-```
-
-### 5. 构建生产版本
-
-构建插件的所有文件到 `dist` 目录：
-
-```bash
-npm run build
-```
-
-构建完成后，`dist` 目录下会生成以下文件：
-- `main.js` - Obsidian 插件主文件
-- `manifest.json` - 插件清单文件
-- `styles.css` - 样式文件
-- `vue-app.umd.js` - Vue 应用文件
-- `LICENSE` - 版权文件
-
-### 6. 手动安装插件
-
-将 `dist` 目录下的以下文件复制到你的 Obsidian vault 中：
-
-```
-你的Vault/.obsidian/plugins/你的插件ID/
-├── main.js
-├── manifest.json
-├── styles.css
-└── vue-app.umd.js
-```
-
-然后在 Obsidian 的设置中启用插件。
 
 ## 开发指南
 
-### 修改插件主逻辑
+### 修改插件信息
 
-编辑 `src/main.ts` 文件，这是 Obsidian 插件的主入口文件。
+1. 更新 `manifest.json` 中的插件信息：
+   - `id`：唯一标识符（建议使用反向域名格式）
+   - `name`：插件名称
+   - `description`：插件描述
+   - `version`：版本号
 
-### 开发 Vue 界面
+2. 更新 `package.json` 中的项目信息
 
-- Vue 组件放在 `src/vue-app/` 目录下
-- 编辑 `src/vue-app/App.vue` 修改主界面
-- 编辑 `src/vue-app/main.ts` 修改 Vue 应用配置
+### 添加新的 Vue 组件
 
-### 添加样式
+1. 在 `src/vue-app/` 目录下创建新的 `.vue` 文件
+2. 在 `src/vue-app/main.ts` 中导入并使用
 
-- 全局样式可以放在项目根目录的 `styles.css` 文件中
-- Vue 组件的样式可以使用 `<style scoped>` 标签
+### 访问 Obsidian API
 
-### 代码质量检查
+在 Vue 组件中，你可以通过全局变量访问插件实例：
 
-运行 ESLint 检查代码质量：
+```typescript
+// 在 main.ts 中设置全局变量
+export default class MyPlugin extends Plugin {
+  onload() {
+    // ...
+    window.myPlugin = this;
+  }
+}
 
-```bash
-npm run lint
+// 在 Vue 组件中使用
+import { onMounted } from 'vue';
+onMounted(() => {
+  const plugin = (window as any).myPlugin;
+  // 使用 plugin.app 访问 Obsidian API
+});
 ```
 
-## 发布新版本
+### 构建说明
 
-### 1. 更新版本号
+项目使用双构建系统：
 
-更新 `manifest.json` 中的版本号，例如 `1.0.1`，以及所需的最低 Obsidian 版本。
+1. **esbuild**：快速构建 `main.ts`，生成 `dist/main.js`
+2. **Vite**：构建 Vue 应用，生成 `dist/vue-app.iife.js` 和 `dist/styles.css`
 
-### 2. 更新版本历史
+构建脚本会自动将所有必要文件复制到 `dist` 目录。
 
-更新 `versions.json` 文件，格式为 `"新版本号": "最低Obsidian版本"`，这样旧版本的 Obsidian 可以下载兼容的插件版本。
 
-### 3. 创建 GitHub Release
 
-- 在 GitHub 上创建新的 Release
-- 使用新版本号作为 Tag（不要加 `v` 前缀）
-- 上传以下文件作为二进制附件：
-  - `manifest.json`
-  - `main.js`
-  - `styles.css`
-  - `vue-app.umd.js`
+## 常见问题
 
-### 4. 简化版本更新流程
+### Vue 组件加载失败
 
-你可以使用以下命令简化版本更新流程：
+确保：
+- 插件 ID 在 `main.ts` 和 `manifest.json` 中一致
+- 软链接已正确创建
+- 构建文件已正确生成
 
-```bash
-npm version patch    # 更新补丁版本 (1.0.0 -> 1.0.1)
-npm version minor    # 更新次版本 (1.0.0 -> 1.1.0)
-npm version major    # 更新主版本 (1.0.0 -> 2.0.0)
-```
+### 设置页面内容消失
 
-这个命令会自动更新 `manifest.json` 和 `package.json` 中的版本号，并在 `versions.json` 中添加新版本的条目。
+如果设置页面内容在切换后消失，确保 `SettingTab.display()` 方法每次都创建新的容器元素：
 
-## 添加到社区插件列表
-
-- 查看 [插件指南](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines)
-- 发布初始版本
-- 确保仓库根目录有 `README.md` 文件
-- 在 https://github.com/obsidianmd/obsidian-releases 提交 Pull Request 添加你的插件
-
-## 资金支持
-
-你可以在 `manifest.json` 中添加资金支持链接，让用户可以经济上支持你的插件。
-
-简单方式：
-
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
+```typescript
+display(): void {
+  const { containerEl } = this;
+  containerEl.empty();
+  const vueContainer = document.createElement('div');
+  vueContainer.id = 'vue-obsidian-setting-container';
+  containerEl.appendChild(vueContainer);
+  this.plugin.mountVueToSetting(vueContainer);
 }
 ```
-
-多个链接：
-
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
-
-## API 文档
-
-查看 Obsidian API 文档：https://docs.obsidian.md
 
 ## 许可证
 
-本项目使用 0BSD 许可证，详见 [LICENSE](LICENSE) 文件。
+[0-BSD License](LICENSE)
